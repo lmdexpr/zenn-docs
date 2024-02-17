@@ -6,11 +6,11 @@ topics:
 - "auth0"
 - "Discord"
 - "MinIO"
-published: false
+published: true
 ---
 # 背景
 運営している Discord サーバーにて、録音をとることがあるのですがファイルサーバーを用意したので良い感じにしたいな～と思っていました。
-API とかで操作しやすいと嬉しいので [MinIO](https://min.io) が良さそうだったので採用しました。
+API とかで操作しやすいと嬉しいので [MinIO](https://min.io) が良さそうということで採用しました。
 
 ところで、権限についても Discord に結びついているととても嬉しいです。
 特に複数の Discord サーバーがあり、それぞれで権限設定を変えたい、という背景もありました。
@@ -28,7 +28,7 @@ A 所属の人は bucket_A のみが、B 所属の人は bucket_B のみが、�
 ## Discord による認可について (なぜ Auth0 も使うのか)
 Discord が OIDC IdP として利用できれば良いのですが、提供されているのは [OAuth2.0 だけ](https://discord.com/developers/docs/topics/oauth2)です。
 OAuth2.0 と OIDC の違いはここで説明しませんが、OAuth2.0 は認証に使えないため、Discord だけでサインインさせることは出来ません。
-参考: https://www.sakimura.org/2012/02/1487/
+https://www.sakimura.org/2012/02/1487/
 
 MinIO が対応しているのも OIDC です。
 そのため、Auth0 を認証のための OIDC IdP として利用した上で認可に Discord を使用します。
@@ -78,7 +78,7 @@ MinIO の OpenID 設定のこの項目はどうやらこの認証で使用され
 実際、使用できました。
 変な指定になっているのはこの後説明します。
 
-参考: https://min.io/docs/minio/macos/operations/external-iam/configure-keycloak-identity-management.html
+https://min.io/docs/minio/macos/operations/external-iam/configure-keycloak-identity-management.html
 
 また、ポリシーを作っておく必要があるので、bucket_A、 bucket_B のためのポリシー policy_A、policy_B を適当に作っておきます。
 この辺りの詳細は文書の範囲外とします。（面倒なので）
@@ -148,6 +148,11 @@ exports.onExecutePostLogin = async (event, api) => {
 
 その後、所属していなければ deny します。
 所属している場合には `setCustomClaim` で claim にポリシーを入れます。
+ここで、ネームスペースを区切るために自分のドメインを入れろ、とドキュメントにあります。
+大人しく従っておきましょう。
+
+https://auth0.com/docs/get-started/apis/scopes/sample-use-cases-scopes-and-claims
+
 自分は今後の拡張を考えてサーバー ID をそのままポリシーの名前にしました。
 クレデンシャル情報かどうか微妙なところなので不安な人は適当な文字列に変換しても良いと思います。
 今回は小さなプライベートコミュニティなので何かあっても大丈夫かなと思っています。
